@@ -8,9 +8,7 @@ set(CMAKE_PREFIX_PATH "./libs/opencv/build")
 find_package(OpenCV REQUIRED)
 
 add_executable(embedding-inference main.cpp)
-
-target_link_libraries(embedding-inference "${TORCH_LIBRARIES}")
-target_link_libraries(embedding-inference "${OpenCV_LIBS}")
+target_link_libraries(embedding-inference ${TORCH_LIBRARIES} ${OpenCV_LIBS} stdc++fs)
 
 set_property(TARGET embedding-inference PROPERTY CXX_STANDARD 17)
 set_property(TARGET embedding-inference PROPERTY OUTPUT_NAME predict)

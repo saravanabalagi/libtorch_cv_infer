@@ -12,12 +12,18 @@ unzip libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101.zip
 rm libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101.zip
 
 # download and build opencv
-wget https://github.com/opencv/opencv/archive/4.5.0.tar.gz
-tar -xvf 4.5.0.tar.gz
-rm 4.5.0.tar.gz
+wget -O opencv.tar.gz https://github.com/opencv/opencv/archive/4.5.0.tar.gz
+tar -xvf opencv.tar.gz
+rm opencv.tar.gz
 mv opencv-4.5.0 opencv
+
+wget -O opencv_contrib.tar.gz https://github.com/opencv/opencv_contrib/archive/4.5.0.tar.gz
+tar -xvf opencv_contrib.tar.gz
+rm opencv_contrib.tar.gz
+mv opencv_contrib-4.5.0 opencv_contrib
+
 cd opencv
 mkdir -p build && cd build
-cmake  ..
-cmake --build .
+cmake -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules ..
+make -j10
 cd ../..

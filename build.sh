@@ -1,6 +1,6 @@
 sh setup.sh
 
-[ $1 = "--clean" ] && rm -rf build
+[ $1="--clean" ] && rm -rf build
 [ ! -d "build" ] && mkdir -p build
 
 cd build
