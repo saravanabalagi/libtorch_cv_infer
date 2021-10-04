@@ -1,14 +1,20 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(embedding-inference)
+project(libtorch-cv-inference)
 
-set(CMAKE_PREFIX_PATH "./libs/libtorch/share/cmake/Torch")
-find_package(Torch REQUIRED)
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0074 NEW)
+endif(COMMAND cmake_policy)
 
-set(CMAKE_PREFIX_PATH "./libs/opencv/build")
-find_package(OpenCV REQUIRED)
+set(Torch_ROOT "libs/libtorch")
+find_package(Torch REQUIRED PATHS ${Torch_ROOT} NO_DEFAULT_PATH)
 
-add_executable(embedding-inference main.cpp)
-target_link_libraries(embedding-inference ${TORCH_LIBRARIES} ${OpenCV_LIBS} stdc++fs)
+set(OpenCV_DIR "libs/opencv/build")
+find_package(OpenCV REQUIRED imgcodecs PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
 
-set_property(TARGET embedding-inference PROPERTY CXX_STANDARD 17)
-set_property(TARGET embedding-inference PROPERTY OUTPUT_NAME predict)
+add_executable(predict predict.cpp)
+target_link_libraries(predict ${TORCH_LIBRARIES} ${OpenCV_LIBS} stdc++fs)
+set_property(TARGET predict PROPERTY CXX_STANDARD 17)
+
+add_executable(predict_dir predict_dir.cpp)
+target_link_libraries(predict_dir ${TORCH_LIBRARIES} ${OpenCV_LIBS} stdc++fs)
+set_property(TARGET predict_dir PROPERTY CXX_STANDARD 17)

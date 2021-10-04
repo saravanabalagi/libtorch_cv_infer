@@ -63,8 +63,13 @@ void printMatDetails(cv::Mat mat, std::string desc="Matrix") {
 
 int main(int argc, char **argv) {
 
-  std::string imgs_dir = "/cephshare/compsci/public/oxford_robotcar/2014-12-09-13-21-02/stereo/sampled";
-  std::string model_path = "/fastscratch/compsci/sarav/projects/c/place_recognition/src/pytorch_cpp_inference/models/20201125132039_add_sigmoid_to_embeddings.pth";
+  if (argc < 3) {
+    std::cout << "Usage: " << argv[0] << "<pth_model_path> <img_path>" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  const std::string& model_path = argv[1];
+  const std::string& img_path = argv[2];
   bool usegpu = true;
 
   // Build model
@@ -74,26 +79,21 @@ int main(int argc, char **argv) {
   model.to(device);
   model.eval();
 
-  for (const auto & entry : fs::directory_iterator(imgs_dir)) {
-    if(entry.path().extension() != ".png") continue;
-    std::string img_path = entry.path();
+  // Resize image if necessary
+  cv::Mat img = readImg(img_path);
+  img = resizeNormalizeImg(img);
+  printMatDetails(img, "Input image");
+  torch::Tensor inputTensor = getInputTensor(img);
+  std::cout << "input shape: " << inputTensor.sizes() << std::endl;
 
-    // Resize image if necessary
-    cv::Mat img = readImg(img_path);
-    img = resizeNormalizeImg(img);
-    printMatDetails(img, "Input image");
-    torch::Tensor inputTensor = getInputTensor(img);
-    std::cout << "input shape: " << inputTensor.sizes() << std::endl;
+  // Inference
+  torch::NoGradGuard no_grad;
+  torch::Tensor output = model.forward({inputTensor.to(device)}).toTensor().detach().to(cpu);    // If model has 1 output
+  cv::Mat descriptor = cv::Mat(1, 2048, CV_32F, output.data_ptr());
+  descriptor.convertTo(descriptor, CV_64F);
 
-    // Inference
-    torch::NoGradGuard no_grad;
-    torch::Tensor output = model.forward({inputTensor.to(device)}).toTensor().detach().to(cpu);    // If model has 1 output
-    cv::Mat descriptor = cv::Mat(1, 2048, CV_32F, output.data_ptr());
-    descriptor.convertTo(descriptor, CV_64F);
-
-    std::cout << "output shape: " << output.sizes() << std::endl;
-    printMatDetails(descriptor, "Descriptor");
-  }
+  std::cout << "output shape: " << output.sizes() << std::endl;
+  printMatDetails(descriptor, "Descriptor");
 
   return 0;
 }

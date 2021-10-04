@@ -7,5 +7,3 @@ cd build
 cmake ..
 make -j6
 cd ..
-
-mv build/predict .
